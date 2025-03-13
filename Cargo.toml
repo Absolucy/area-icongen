@@ -1,0 +1,45 @@
+[package]
+name = "area-icongen"
+version = "0.1.0"
+authors = ["Lucy <lucy@absolucy.moe>"]
+edition = "2021"
+license = "Zlib"
+repository = "https://github.com/Absolucy/auto-compressor"
+
+[dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
+itertools = "0.14"
+egui = "0.31"
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "persistence"] }
+serde = { version = "1", features = ["derive"] }
+egui_extras = "0.31"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+overflow-checks = false
+strip = "debuginfo"
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[workspace.lints.clippy]
+# presets
+complexity = "warn"
+correctness = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "warn"
+# individual lints
+assigning_clones = "warn"
+create_dir = "warn"
+default_trait_access = "warn"
+inefficient_to_string = "warn"
+redundant_type_annotations = "warn"
+self_named_module_files = "warn"
+str_to_string = "warn"
+string_to_string = "warn"
