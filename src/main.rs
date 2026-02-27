@@ -1,4 +1,5 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+// hide console window on Windows in release
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
@@ -12,7 +13,7 @@ fn main() -> eframe::Result {
 		..eframe::NativeOptions::default()
 	};
 	eframe::run_native(
-		"eframe template",
+		"SS13 area icon generator",
 		native_options,
 		Box::new(|cc| Ok(Box::new(area_icongen::AppDoohickey::new(cc)))),
 	)
@@ -24,7 +25,7 @@ fn main() {
 	use eframe::wasm_bindgen::JsCast as _;
 
 	// Redirect `log` message to `console.log` and friends:
-	//eframe::WebLogger::init(log::LevelFilter::Debug).ok();
+	eframe::WebLogger::init(log::LevelFilter::Debug).ok();
 
 	let web_options = eframe::WebOptions::default();
 
@@ -35,16 +36,16 @@ fn main() {
 			.expect("No document");
 
 		let canvas = document
-			.get_element_by_id("the_canvas_id")
+			.get_element_by_id("mrrrp_mrrrp_mrrrow")
 			.expect("Failed to find the_canvas_id")
 			.dyn_into::<web_sys::HtmlCanvasElement>()
-			.expect("the_canvas_id was not a HtmlCanvasElement");
+			.expect("mrrrp_mrrrp_mrrrow was not a HtmlCanvasElement");
 
 		let start_result = eframe::WebRunner::new()
 			.start(
 				canvas,
 				web_options,
-				Box::new(|cc| Ok(Box::new(eframe_template::TemplateApp::new(cc)))),
+				Box::new(|cc| Ok(Box::new(area_icongen::AppDoohickey::new(cc)))),
 			)
 			.await;
 

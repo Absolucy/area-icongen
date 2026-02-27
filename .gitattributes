@@ -46,6 +46,7 @@
 # use the following line instead.
 # *.svg    binary
 *.eps      binary
+*.qoi      binary
 
 # Scripts
 *.bash     text eol=lf

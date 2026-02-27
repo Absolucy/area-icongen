@@ -2,25 +2,28 @@
 name = "area-icongen"
 version = "0.1.0"
 authors = ["Lucy <lucy@absolucy.moe>"]
-edition = "2021"
-license = "Zlib"
-repository = "https://github.com/Absolucy/auto-compressor"
+edition = "2024"
+license = "MPL-2.0"
+repository = "https://github.com/Absolucy/area-icongen"
 
 [dependencies]
-image = { version = "0.25", default-features = false, features = ["png"] }
-itertools = "0.14"
-egui = "0.31"
-eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "persistence"] }
+eframe = { version = "0.33", default-features = false, features = ["persistence", "glow"] }
+egui = "0.33"
+image = { version = "0.25", default-features = false, features = ["png", "qoi"] }
+log = "0.4"
 serde = { version = "1", features = ["derive"] }
-egui_extras = "0.31"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
-web-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window", "Document", "HtmlAnchorElement", "Url", "Blob", "BlobPropertyBag", "Element"] }
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+egui-file-dialog = "0.12"
 
 [profile.release]
 lto = "thin"
-codegen-units = 1
 overflow-checks = false
 strip = "debuginfo"
 
