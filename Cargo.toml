@@ -27,6 +27,13 @@ lto = "thin"
 overflow-checks = false
 strip = "debuginfo"
 
+# be way more aggressive with WASM optimizations
+[profile.release-wasm]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+
 [profile.dev.package."*"]
 opt-level = 2
 
