@@ -12,6 +12,7 @@ egui = { version = "0.33", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png", "qoi"] }
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
+webbrowser = "1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"

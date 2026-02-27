@@ -167,6 +167,17 @@ impl App for AppDoohickey {
 	}
 
 	fn update(&mut self, ctx: &Context, _frame: &mut Frame) {
+		egui::TopBottomPanel::top("header").show(ctx, |ui| {
+			ui.horizontal(|ui| {
+				ui.label("SS13 Area Icon Generator");
+				ui.separator();
+				if ui.link("Source Code").clicked() {
+					let _ = webbrowser::open(env!("CARGO_PKG_REPOSITORY"));
+				}
+				ui.separator();
+				ui.label("Mrrrp, mrrrp, mrrrrow~");
+			});
+		});
 		egui::CentralPanel::default().show(ctx, |ui| {
 			let mut should_regen_texture = false;
 			ui.group(|ui| {
