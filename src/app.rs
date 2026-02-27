@@ -1,6 +1,9 @@
 use crate::icongen::IconGenerator;
 use eframe::{App, CreationContext, Frame, Storage};
-use egui::{Context, TextEdit};
+use egui::{
+	Context, TextEdit, TextStyle,
+	epaint::text::{FontInsert, InsertFontFamily},
+};
 #[cfg(not(target_arch = "wasm32"))]
 use egui_file_dialog::FileDialog;
 use log::debug;
@@ -41,8 +44,34 @@ impl AppDoohickey {
 			Some(storage) => eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default(),
 			None => Self::default(),
 		};
+		app.setup_fonts(&cc.egui_ctx);
 		app.update_texture(&cc.egui_ctx);
 		app
+	}
+
+	fn setup_fonts(&self, ctx: &Context) {
+		ctx.add_font(FontInsert::new(
+			"Ubuntu-Light",
+			egui::FontData::from_static(include_bytes!("fonts/Ubuntu-Light.ttf")),
+			vec![
+				InsertFontFamily {
+					family: egui::FontFamily::Proportional,
+					priority: egui::epaint::text::FontPriority::Highest,
+				},
+				InsertFontFamily {
+					family: egui::FontFamily::Monospace,
+					priority: egui::epaint::text::FontPriority::Lowest,
+				},
+			],
+		));
+		ctx.add_font(FontInsert::new(
+			"Hack",
+			egui::FontData::from_static(include_bytes!("fonts/Hack-Regular-minimal.ttf")),
+			vec![InsertFontFamily {
+				family: egui::FontFamily::Monospace,
+				priority: egui::epaint::text::FontPriority::Highest,
+			}],
+		));
 	}
 
 	fn update_texture(&mut self, ctx: &Context) {
@@ -153,7 +182,14 @@ impl App for AppDoohickey {
 				egui::Grid::new("text").num_columns(2).show(ui, |ui| {
 					for (idx, line) in self.text.iter_mut().enumerate() {
 						ui.horizontal(|ui| {
-							if ui.add(TextEdit::singleline(line).char_limit(8)).changed() {
+							if ui
+								.add(
+									TextEdit::singleline(line)
+										.char_limit(8)
+										.font(TextStyle::Monospace),
+								)
+								.changed()
+							{
 								should_regen_texture = true;
 							}
 							if idx > 0 && ui.button("-").clicked() {
