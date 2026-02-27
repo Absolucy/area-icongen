@@ -3,7 +3,7 @@ name = "area-icongen"
 version = "0.1.0"
 authors = ["Lucy <lucy@absolucy.moe>"]
 edition = "2024"
-license = "MPL-2.0"
+license = "0BSD"
 repository = "https://github.com/Absolucy/area-icongen"
 
 [dependencies]

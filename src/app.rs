@@ -175,6 +175,10 @@ impl App for AppDoohickey {
 					let _ = webbrowser::open(env!("CARGO_PKG_REPOSITORY"));
 				}
 				ui.separator();
+				if ui.link("Licensed under 0BSD").clicked() {
+					let _ = webbrowser::open("https://opensource.org/license/0bsd");
+				}
+				ui.separator();
 				ui.label("Mrrrp, mrrrp, mrrrrow~");
 			});
 		});
