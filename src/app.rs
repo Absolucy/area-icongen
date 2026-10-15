@@ -8,6 +8,11 @@ use egui::{
 use egui_file_dialog::FileDialog;
 use log::debug;
 use serde::{Deserialize, Serialize};
+#[cfg(target_arch = "wasm32")]
+use std::collections::BTreeMap;
+
+const MAX_LINES: usize = 5;
+const MAX_LINE_CHARS: usize = 8;
 
 #[derive(Deserialize, Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -17,6 +22,9 @@ pub struct AppDoohickey {
 	#[cfg(not(target_arch = "wasm32"))]
 	#[serde(skip)]
 	file_dialog: FileDialog,
+	#[cfg(target_arch = "wasm32")]
+	#[serde(skip)]
+	page_url: String,
 }
 
 impl Default for AppDoohickey {
@@ -33,6 +41,8 @@ impl Default for AppDoohickey {
 			file_dialog: FileDialog::new()
 				.add_save_extension("PNG Image", "png")
 				.default_save_extension("PNG Image"),
+			#[cfg(target_arch = "wasm32")]
+			page_url: String::new(),
 		}
 	}
 }
@@ -45,8 +55,87 @@ impl AppDoohickey {
 			None => Self::default(),
 		};
 		app.setup_fonts(&cc.egui_ctx);
+		#[cfg(target_arch = "wasm32")]
+		{
+			let location = &cc.integration_info.web_info.location;
+			app.page_url = location
+				.url
+				.split_once('?')
+				.map_or(location.url.as_str(), |(base, _)| base)
+				.to_owned();
+			app.apply_query(&location.query_map);
+		}
 		app.update_texture(&cc.egui_ctx);
 		app
+	}
+
+	#[cfg(target_arch = "wasm32")]
+	fn apply_query(&mut self, query: &BTreeMap<String, Vec<String>>) {
+		let first = |key: &str| query.get(key).and_then(|values| values.first());
+
+		// plain `text` (newline separated) wins over text1..text5
+		let raw_lines = match first("text") {
+			Some(text) => text.lines().take(MAX_LINES).collect::<Vec<&str>>(),
+			None => (1..=MAX_LINES)
+				.filter_map(|n| first(&format!("text{n}")))
+				.map(String::as_str)
+				.collect(),
+		};
+		let lines = raw_lines
+			.into_iter()
+			// eframe only decodes %XX, so a form-style + would stay a literal plus
+			.map(|value| {
+				value
+					.replace('+', " ")
+					.chars()
+					.take(MAX_LINE_CHARS)
+					.collect()
+			})
+			.collect::<Vec<String>>();
+		if !lines.is_empty() {
+			self.text = lines;
+		}
+
+		let colors = [
+			("bg", &mut self.icongen.background_color),
+			("text_bg", &mut self.icongen.text_background_color),
+			("fg", &mut self.icongen.text_color),
+		];
+		for (key, slot) in colors {
+			// from_hex wants the leading #, which can't sit raw in a url
+			let parsed = first(key).and_then(|value| {
+				egui::Color32::from_hex(&format!("#{}", value.trim_start_matches('#'))).ok()
+			});
+			if let Some(color) = parsed {
+				*slot = color.to_srgba_unmultiplied();
+			}
+		}
+	}
+
+	#[cfg(target_arch = "wasm32")]
+	fn share_link(&self) -> String {
+		let hex = |[r, g, b, a]: [u8; 4]| {
+			egui::Color32::from_rgba_unmultiplied(r, g, b, a)
+				.to_hex()
+				.trim_start_matches('#')
+				.to_owned()
+		};
+		let mut params = self
+			.text
+			.iter()
+			.enumerate()
+			.map(|(idx, line)| {
+				let encoded = String::from(js_sys::encode_uri_component(line));
+				format!("text{}={encoded}", idx + 1)
+			})
+			.collect::<Vec<String>>();
+		params.push(format!("bg={}", hex(self.icongen.background_color)));
+		params.push(format!(
+			"text_bg={}",
+			hex(self.icongen.text_background_color)
+		));
+		params.push(format!("fg={}", hex(self.icongen.text_color)));
+		format!("{}?{}", self.page_url, params.join("&"))
 	}
 
 	fn setup_fonts(&self, ctx: &Context) {
@@ -189,7 +278,11 @@ impl App for AppDoohickey {
 					if ui.button("Save PNG").clicked() {
 						self.save_png();
 					}
-					if self.text.len() < 5 && ui.button("+").clicked() {
+					#[cfg(target_arch = "wasm32")]
+					if ui.button("Copy Link").clicked() {
+						ctx.copy_text(self.share_link());
+					}
+					if self.text.len() < MAX_LINES && ui.button("+").clicked() {
 						self.text.push(String::new());
 					}
 				});
@@ -200,7 +293,7 @@ impl App for AppDoohickey {
 							if ui
 								.add(
 									TextEdit::singleline(line)
-										.char_limit(8)
+										.char_limit(MAX_LINE_CHARS)
 										.font(TextStyle::Monospace),
 								)
 								.changed()

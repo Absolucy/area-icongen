@@ -10,8 +10,8 @@ pub const CHAR_HEIGHT: u32 = 5;
 fn load_spritesheet() -> HashMap<char, RgbaImage> {
 	// because i'm silly and like to overcomplicate things, the font is a QOI
 	// spritesheet, except there's extra data appended to the end!
-	// the characters associated with each sprite (they are 3x5 each), followed by
-	// how many characters there are.
+	// the characters associated with each sprite (they are 3x5 each), followed
+	// by how many characters there are.
 
 	let spritesheet_file = include_bytes!("spritesheet.qoi");
 	let file_len = spritesheet_file.len();
